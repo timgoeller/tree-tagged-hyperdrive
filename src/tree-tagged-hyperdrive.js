@@ -30,35 +30,34 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
     this.drive = hyperdrive(this.corestore)
 
     this.drive.on('ready', async function () {
-      const semverMetadata = {
+      const treeMetadata = {
         contentFeed: self.drive.metadata.key,
         userData: opts.userData
       }
-      self.semverTree = new Hyperbee(self.corestore.get({ name: 'semver-tree' }), {
+      self.tree = new Hyperbee(self.corestore.get({ name: 'tree' }), {
         keyEncoding: 'utf-8',
         valueEncoding: 'binary',
-        metadata: semverMetadata
+        metadata: treeMetadata
       })
-      await self.semverTree.ready()
+      await self.tree.ready()
       self.emit('ready')
     })
   }
 
   async _initializeFromExisting (key, opts) {
     const self = this
-    this.semverTree = new Hyperbee(this.corestore.get({ key: key }), {
+    this.tree = new Hyperbee(this.corestore.get({ key: key }), {
       keyEncoding: 'utf-8',
       valueEncoding: 'binary'
     })
-    await this.semverTree.ready()
-    await this.semverTree.feed.get(0, async function (err, data) {
+    await this.tree.ready()
+    await this.tree.feed.get(0, async function (err, data) {
       if (err) throw err
       const header = Header.decode(data)
       self.drive = hyperdrive(self.corestore, header.metadata.contentFeed)
       await self.drive.ready()
       self.emit('ready')
     })
-    self.emit('ready')
   }
 
   async ready () {
@@ -70,13 +69,24 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
     })
   }
 
-  async pushVersion (semanticVersion) {
-    const currentCoreVersion = this.drive.version
-    this.semverTree.put(semanticVersion, currentCoreVersion.toString())
+  async put (tag, version = this.drive.version) {
+    await this.tree.put(tag, version.toString())
+  }
+
+  async getVersion (tag) {
+    return await this.tree.get(tag)
+  }
+
+  async getDriveAtTag (tag) {
+    const node = await this.getVersion(tag)
+    if (node) {
+      return this.drive.checkout(node.value.toString())
+    }
+    return null
   }
 
   getKey () {
-    return this.semverTree.feed.key
+    return this.tree.feed.key
   }
 
   replicate (isInitiator, opts) {
@@ -85,6 +95,10 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
 
   getDrive () {
     return this.drive
+  }
+
+  getTree () {
+    return this.tree
   }
 }
 
