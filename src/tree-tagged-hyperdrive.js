@@ -73,7 +73,7 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
     await this.tree.put(tag, version.toString())
   }
 
-  async getVersion (tag) {
+  async getVersionAtTag (tag) {
     return await this.tree.get(tag)
   }
 
