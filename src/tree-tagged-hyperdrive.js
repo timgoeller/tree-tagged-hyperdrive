@@ -19,7 +19,7 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
     }
     await this.corestore.ready()
     if (key !== undefined && key !== null) {
-      this._initializeFromExisting(opts)
+      this._initializeFromExisting(key, opts)
     } else {
       this._initializeNew(opts)
     }
@@ -35,8 +35,8 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
         userData: opts.userData
       }
       self.semverTree = new Hyperbee(self.corestore.get({ name: 'semver-tree' }), {
-        keyEncoding: 'utf-8', // can be set to undefined (binary), utf-8, ascii or and abstract-encoding
-        valueEncoding: 'binary', // same options as above
+        keyEncoding: 'utf-8',
+        valueEncoding: 'binary',
         metadata: semverMetadata
       })
       await self.semverTree.ready()
@@ -47,8 +47,8 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
   async _initializeFromExisting (key, opts) {
     const self = this
     this.semverTree = new Hyperbee(this.corestore.get({ key: key }), {
-      keyEncoding: 'utf-8', // can be set to undefined (binary), utf-8, ascii or and abstract-encoding
-      valueEncoding: 'binary' // same options as above
+      keyEncoding: 'utf-8',
+      valueEncoding: 'binary'
     })
     await this.semverTree.ready()
     await this.semverTree.feed.get(0, async function (err, data) {
