@@ -1,5 +1,5 @@
 # Tree Tagged Hyperdrive
-This is a hyperdrive with a hyperbee on top. Every node in the hyperbee refers to a version of the hyperdrive. It's only required to share one key, because the hyperdrive key is stored in the hyperbee metadata, and setup is automatically done by this module.
+This is a [hyperdrive](https://github.com/hypercore-protocol/hyperdrive) with a [hyperbee](https://github.com/mafintosh/hyperbee) on top. Every node in the hyperbee refers to a version of the hyperdrive. It's only required to share one key, because the hyperdrive key is stored in the hyperbee metadata, and setup is automatically done by this module.
 
 ## Example
 In this example two tagged hyperdrives are created. The first one is piped into the second one, so they return the same data. The same file is inserted into the first hyperdrive three times, each time with different data. Each time the file is inserted, an entry in the tree with a different version tag is created. Then all versions greater than `1.0.0` are requested and the content of their `hello.txt` is printed.
