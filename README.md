@@ -64,7 +64,10 @@ Make a new tagged hyperdrive. `key` can be a reference to a hyperbee instance.
 ```
 
 #### `await treeTaggedHyperdrive.ready()`
-Wait for initialization to be complete.
+Wait for construction to be completed.
+
+#### `await treeTaggedHyperdrive.initialized()`
+Wait for header to be loaded. Behaves the same as `ready()` when creating a new tree.
 
 #### `await treeTaggedHyperdrive.put(tag, <version>)`
 Add an entry to the tree, refering to a hyperdrive version. If no version is supplied, the current drive version will be used.

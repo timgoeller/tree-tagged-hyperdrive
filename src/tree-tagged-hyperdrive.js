@@ -8,6 +8,18 @@ const ram = require('random-access-memory')
 class TreeTaggedHyperdrive extends events.EventEmitter {
   constructor (key, opts = {}) {
     super()
+
+    const self = this
+    this._ready = new Promise((resolve, reject) => {
+      self.on('ready', () => {
+        resolve()
+      })
+    })
+    this._initialized = new Promise((resolve, reject) => {
+      self.on('initialized', () => {
+        resolve()
+      })
+    })
     this._initialize(key, opts)
   }
 
@@ -28,11 +40,11 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
   async _initializeNew (opts) {
     const self = this
     this.drive = hyperdrive(this.corestore)
-
+    this.userData = opts.userData
     this.drive.on('ready', async function () {
       const treeMetadata = {
         contentFeed: self.drive.metadata.key,
-        userData: opts.userData
+        userData: self.userData
       }
       self.tree = new Hyperbee(self.corestore.get({ name: 'tree' }), {
         keyEncoding: 'utf-8',
@@ -40,6 +52,7 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
         metadata: treeMetadata
       })
       await self.tree.ready()
+      self.emit('initialized')
       self.emit('ready')
     })
   }
@@ -51,9 +64,11 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
       valueEncoding: 'binary'
     })
     await this.tree.ready()
+    self.emit('initialized')
     await this.tree.feed.get(0, async function (err, data) {
       if (err) throw err
       const header = Header.decode(data)
+      self.userData = header.metadata.userData.toString()
       self.drive = hyperdrive(self.corestore, header.metadata.contentFeed)
       await self.drive.ready()
       self.emit('ready')
@@ -61,12 +76,11 @@ class TreeTaggedHyperdrive extends events.EventEmitter {
   }
 
   async ready () {
-    const self = this
-    return new Promise((resolve, reject) => {
-      self.on('ready', () => {
-        resolve()
-      })
-    })
+    return this._ready
+  }
+
+  async initialized () {
+    return this._initialized
   }
 
   async put (tag, version = this.drive.version) {
